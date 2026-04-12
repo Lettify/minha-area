@@ -1,19 +1,90 @@
+import { useEffect, useState } from 'react'
 import './App.css'
 
+const NAV_ITEMS = [
+  { id: 'inicio', label: 'Inicio' },
+  { id: 'sobre', label: 'Sobre' },
+  { id: 'stack', label: 'Stack' },
+  { id: 'conhecimentos', label: 'Conhecimentos' },
+  { id: 'cursos', label: 'Cursos' },
+  { id: 'contato', label: 'Contato' },
+]
+
 function App() {
+  const [activeSection, setActiveSection] = useState('inicio')
+
+  useEffect(() => {
+    const sectionIds = NAV_ITEMS.map((item) => item.id)
+    const sectionElements = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((element): element is HTMLElement => element !== null)
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleEntries = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)
+
+        if (visibleEntries[0]) {
+          setActiveSection((visibleEntries[0].target as HTMLElement).id)
+        }
+      },
+      {
+        rootMargin: '-34% 0px -54% 0px',
+        threshold: [0.2, 0.45, 0.7],
+      },
+    )
+
+    sectionElements.forEach((section) => observer.observe(section))
+
+    const handleHashChange = () => {
+      const nextHash = window.location.hash.replace('#', '')
+      if (sectionIds.includes(nextHash)) {
+        setActiveSection(nextHash)
+      }
+    }
+
+    const handleTopScroll = () => {
+      if (window.scrollY < 84) {
+        setActiveSection('inicio')
+      }
+    }
+
+    window.addEventListener('hashchange', handleHashChange)
+    window.addEventListener('scroll', handleTopScroll, { passive: true })
+    handleHashChange()
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('hashchange', handleHashChange)
+      window.removeEventListener('scroll', handleTopScroll)
+    }
+  }, [])
+
   return (
     <div className="portfolio-page">
       <header className="topbar">
-        <a className="brand" href="#inicio">
-          Michael Silva
+        <a className="brand" href="#inicio" aria-label="Voltar para o inicio">
+          <svg className="brand-icon brand-icon--geo" viewBox="0 0 28 28" aria-hidden="true">
+            <path d="M14 3.8L22.5 8.7V18.3L14 23.2L5.5 18.3V8.7L14 3.8Z" />
+            <path d="M10 11.2L14 14L18 11.2M14 14V19.4" />
+            <circle cx="14" cy="8.3" r="1.2" />
+            <circle cx="18.2" cy="11.1" r="1.2" />
+            <circle cx="9.8" cy="11.1" r="1.2" />
+            <circle cx="14" cy="19.6" r="1.2" />
+          </svg>
+          <span className="brand-name">Michael Silva</span>
         </a>
         <nav aria-label="Navegacao principal">
-          <a href="#inicio">Inicio</a>
-          <a href="#sobre">Sobre</a>
-          <a href="#stack">Stack</a>
-          <a href="#conhecimentos">Conhecimentos</a>
-          <a href="#cursos">Cursos</a>
-          <a href="#contato">Contato</a>
+          {NAV_ITEMS.map((item) => (
+            <a
+              key={item.id}
+              href={`#${item.id}`}
+              className={activeSection === item.id ? 'active' : undefined}
+            >
+              {item.label}
+            </a>
+          ))}
         </nav>
       </header>
 
@@ -121,7 +192,7 @@ function App() {
               Superior em Tecnologia de Análise e Desenvolvimento de Sistemas -
               UDF
             </li>
-            <li>Formação em Ciberseguranca - Cisco</li>
+            <li>Curso de Ciberseguranca - Cisco</li>
           </ul>
         </section>
 
