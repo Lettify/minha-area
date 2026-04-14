@@ -16,19 +16,14 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # 1. Carregar o ambiente do Node/NVM
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
-            # 2. Entrar na pasta e atualizar código
             cd /root/SITES/personal-site
             git pull origin main
 
-            # 3. Instalar e Buildar
             npm install
             npm run build
 
-            # 4. Reiniciar no PM2 usando o caminho global
-            # Isso garante que ele use a versão nova do Node
             export PATH=$PATH:$(npm bin -g)
             pm2 restart meu-site
